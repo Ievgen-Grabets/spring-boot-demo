@@ -1,23 +1,29 @@
 package evg.test.controller;
 
+import evg.test.dto.DataDTO;
 import evg.test.exception.RestException;
-import evg.test.util.Ajax;
+import evg.test.service.DataService;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 
-@RestController
+@Controller
 public class DataController extends ExceptionHandlerController {
 
     private static final Logger LOG = Logger.getLogger(DataController.class);
 
-    @RequestMapping(value = "/getData",  method = RequestMethod.GET)
-    public ResponseEntity String(@RequestParam(value = "category", required = false) String[] category,
+    @Autowired
+    private DataService dataService;
+
+    @RequestMapping(value = "/getData",  method = RequestMethod.GET, headers="Accept=application/json")
+    public ResponseEntity<List<DataDTO>> handle(@RequestParam(value = "category", required = false) String[] category,
                                   @RequestParam(value = "tags", required = false) String[] tags,
                                   @RequestParam(value = "studio", required = false) String[] studio,
                                   @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime,
@@ -29,11 +35,11 @@ public class DataController extends ExceptionHandlerController {
         System.out.println("publishTime " + publishTime);
         System.out.println("promotedIds " + Arrays.toString(promotedIds));
 
+        List<DataDTO> dataDTOS = dataService.getDataList(category, tags, studio, promotedIds, publishTime);
+
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("HeaderKey", "HeaderData");
-        return new ResponseEntity<>(
-                "<i>This is</i> the <h2>Page value</h2> (ResponseBody)", responseHeaders,
-                HttpStatus.OK);
+        return new ResponseEntity<>(dataDTOS, responseHeaders, HttpStatus.OK);
 
     }
 
