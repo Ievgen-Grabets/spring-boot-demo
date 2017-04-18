@@ -15,17 +15,17 @@ public class DataController extends ExceptionHandlerController {
 
     @RequestMapping(value = "/getData",  method = RequestMethod.GET)
     public @ResponseBody
-    Map<String, Object> getData(@RequestParam(value = "category[]", required = false) String[] category,
-                                @RequestParam(value = "tags[]", required = false) String[] tags,
-                                @RequestParam(value = "studio[]", required = false) String studio[],
+    Map<String, Object> getData(@RequestParam(value = "category", required = false) String[] category,
+                                @RequestParam(value = "tags", required = false) String[] tags,
+                                @RequestParam(value = "studio", required = false) String studio[],
                                 @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime,
-                                @RequestParam(value = "promotedIds ", required = false) String promotedIds []) throws RestException {
+                                @RequestParam(value = "promotedIds", required = false) String promotedIds []) throws RestException {
 
         System.out.println("category " + Arrays.toString(category));
         System.out.println("tags " + Arrays.toString(tags));
         System.out.println("studio " +  Arrays.toString(studio));
         System.out.println("publishTime " + publishTime);
-        System.out.println("studio " +  Arrays.toString(promotedIds));
+        System.out.println("promotedIds " +  Arrays.toString(promotedIds));
 
         try {
             return Ajax.emptyResponse();
