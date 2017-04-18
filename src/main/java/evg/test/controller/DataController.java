@@ -16,12 +16,12 @@ public class DataController extends ExceptionHandlerController {
 
     private static final Logger LOG = Logger.getLogger(DataController.class);
 
-    @RequestMapping(value = "/getData", method = RequestMethod.GET)
+    @RequestMapping(value = "/getData",  method = RequestMethod.GET)
     public ResponseEntity String(@RequestParam(value = "category", required = false) String[] category,
-                                 @RequestParam(value = "tags", required = false) String[] tags,
-                                 @RequestParam(value = "studio", required = false) String studio[],
-                                 @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime,
-                                 @RequestParam(value = "promotedIds", required = false) String promotedIds[]) throws RestException {
+                                  @RequestParam(value = "tags", required = false) String[] tags,
+                                  @RequestParam(value = "studio", required = false) String[] studio,
+                                  @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime,
+                                  @RequestParam(value = "promotedIds", required = false) String[] promotedIds) throws RestException {
 
         System.out.println("category " + Arrays.toString(category));
         System.out.println("tags " + Arrays.toString(tags));
