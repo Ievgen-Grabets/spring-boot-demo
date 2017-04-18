@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class DataController extends ExceptionHandlerController {
     @Autowired
     private DataService dataService;
 
-    @RequestMapping(value = "/getData",  method = RequestMethod.GET, headers="Accept=application/json")
+    @RequestMapping(value = "/getData",  method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<DataDTO>> handle(@RequestParam(value = "category", required = false) String[] category,
                                   @RequestParam(value = "tags", required = false) String[] tags,
                                   @RequestParam(value = "studio", required = false) String[] studio,
@@ -34,12 +35,9 @@ public class DataController extends ExceptionHandlerController {
         System.out.println("studio " + Arrays.toString(studio));
         System.out.println("publishTime " + publishTime);
         System.out.println("promotedIds " + Arrays.toString(promotedIds));
-
         List<DataDTO> dataDTOS = dataService.getDataList(category, tags, studio, promotedIds, publishTime);
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("HeaderKey", "HeaderData");
-        return new ResponseEntity<>(dataDTOS, responseHeaders, HttpStatus.OK);
+        return ResponseEntity.ok().body(dataDTOS);
 
     }
 
