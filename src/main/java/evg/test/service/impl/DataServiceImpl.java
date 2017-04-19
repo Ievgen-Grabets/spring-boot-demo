@@ -2,19 +2,69 @@ package evg.test.service.impl;
 
 import evg.test.dto.DataDTO;
 import evg.test.service.DataService;
+import evg.test.service.ElasticSearchClient;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.internal.InternalSearchHit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class DataServiceImpl implements DataService {
 
-    private static final DataDTO[] dataDTOStaticArray = {new DataDTO("26cba770-0115-45b2-8cc0-185dac2243bb", "content1"), new DataDTO("11baca0e-3dbc-4066-a035-ce5bcf07ab9d", "content2")};
+    @Autowired
+    private ElasticSearchClient elasticSearchClient;
 
     @Override
-    public List<DataDTO> getDataList(String[] category, String[] tags, String[] studio, String[] promotedIds, String orderPublishTime) {
-        return Collections.unmodifiableList(Arrays.asList(dataDTOStaticArray));
+    public List<DataDTO> getDataList(String[] category, String[] tags, String studio, String[] promotedIds, String orderPublishTime) {
+
+        TransportClient client = elasticSearchClient.getClient();
+        //SearchResponse response = client.prepareSearch().get();
+
+        List<DataDTO> dataDTOS = new ArrayList<>();
+        SearchResponse response = client.prepareSearch("index1")
+                .setTypes("feeds")
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.termQuery("tag", "tag2"))                 // Query
+                .setFrom(0).setSize(60).setExplain(true)
+                .get();
+
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map element = ((InternalSearchHit) hit).getSource();
+            String name = (String) element.get("name");
+            String id = (String) element.get("id");
+            String elementCategory = (String) element.get("category");
+            String elementDescription = (String) element.get("description");
+            String elementStudio = (String) element.get("studio");
+            Date elementPublishTime = new Date((Long) element.get("publishTime"));
+            Object[] objectArray =  ((ArrayList) element.get("tag")).toArray();
+            String[] elementTag =  Arrays.copyOf(objectArray, objectArray.length, String[].class);;
+            objectArray =  ((ArrayList) element.get("promotedIds")).toArray();
+            String[] elementPromotedIds = Arrays.copyOf(objectArray, objectArray.length, String[].class);;
+            DataDTO dataDTO = new DataDTO(name);
+            dataDTO.setId(id);
+            dataDTO.setCategory(elementCategory);
+            dataDTO.setTag(elementTag);
+            dataDTO.setDescription(elementDescription);
+            dataDTO.setStudio(elementStudio);
+            dataDTO.setPublishTime(elementPublishTime);
+            dataDTO.setPromotedIds(elementPromotedIds);
+
+            dataDTOS.add(dataDTO);
+
+
+            System.out.println("hit" + hit);
+
+        }
+
+
+        //return Collections.unmodifiableList(Arrays.asList(FakeDataHolder.DATA_DTO_ARRAY));
+        return Collections.unmodifiableList(dataDTOS);
+
     }
 }

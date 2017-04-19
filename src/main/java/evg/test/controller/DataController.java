@@ -5,8 +5,6 @@ import evg.test.exception.RestException;
 import evg.test.service.DataService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,16 +21,17 @@ public class DataController extends ExceptionHandlerController {
     @Autowired
     private DataService dataService;
 
-    @RequestMapping(value = "/getData",  method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataDTO>> handle(@RequestParam(value = "category", required = false) String[] category,
-                                  @RequestParam(value = "tags", required = false) String[] tags,
-                                  @RequestParam(value = "studio", required = false) String[] studio,
-                                  @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime,
-                                  @RequestParam(value = "promotedIds", required = false) String[] promotedIds) throws RestException {
+    @RequestMapping(value = "/feed",  method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DataDTO>> handle(@RequestParam(value = "category[]", required = false) String[] category,
+                                  @RequestParam(value = "tags[]", required = false) String[] tags,
+                                  @RequestParam(value = "studio", required = false) String studio,
+                                  @RequestParam(value = "promotedIds[]", required = false) String[] promotedIds,
+                                  @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime)
+            throws RestException {
 
         System.out.println("category " + Arrays.toString(category));
         System.out.println("tags " + Arrays.toString(tags));
-        System.out.println("studio " + Arrays.toString(studio));
+        System.out.println("studio " + studio);
         System.out.println("publishTime " + publishTime);
         System.out.println("promotedIds " + Arrays.toString(promotedIds));
         List<DataDTO> dataDTOS = dataService.getDataList(category, tags, studio, promotedIds, publishTime);

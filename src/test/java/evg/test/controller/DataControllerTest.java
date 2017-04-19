@@ -2,17 +2,13 @@ package evg.test.controller;
 
 import evg.test.dto.DataDTO;
 import evg.test.service.DataService;
-import evg.test.util.CommonConstHolder;
-import org.junit.Assert;
+import evg.test.util.FakeDataHolder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.View;
 
@@ -50,7 +46,7 @@ public class DataControllerTest {
 
     @Test
     public void testListPeopleInGroup() throws Exception {
-        DataDTO[] dataDTOS = {new DataDTO("11baca0e-3dbc-4066-a035-ce5bcf07ab9d", "content1")};
+        DataDTO[] dataDTOS = FakeDataHolder.DATA_DTO_ARRAY;
         List<DataDTO> expectedDataDTOs = Arrays.asList(dataDTOS);
         when(mockDataService.getDataList(
                 new String[]{"cat1", "cat2"},
@@ -59,11 +55,11 @@ public class DataControllerTest {
                 null,
                 "relevancy")).thenReturn(expectedDataDTOs);
 
-        mockMvc.perform(get("/getData?category=cat1,cat2&tags=tggg"))
+        mockMvc.perform(get("/feed?category[]=cat1,cat2&tags[]=tggg"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$.[0].id", is("11baca0e-3dbc-4066-a035-ce5bcf07ab9d")));
+                .andExpect(jsonPath("$.[0].id", is("26cba770-0115-45b2-8cc0-185dac2243bb")));
     }
 
 
