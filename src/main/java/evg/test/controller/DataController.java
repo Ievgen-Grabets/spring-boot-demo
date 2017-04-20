@@ -21,20 +21,22 @@ public class DataController extends ExceptionHandlerController {
     @Autowired
     private DataService dataService;
 
-    @RequestMapping(value = "/feed",  method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataDTO>> handle(@RequestParam(value = "category[]", required = false) String[] category,
-                                  @RequestParam(value = "tags[]", required = false) String[] tags,
-                                  @RequestParam(value = "studio", required = false) String studio,
-                                  @RequestParam(value = "promotedIds[]", required = false) String[] promotedIds,
-                                  @RequestParam(value = "publishTime", required = false, defaultValue = "relevancy") String publishTime)
+    @RequestMapping(value = "/feed",  method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DataDTO>> handle(
+            @RequestParam("accessToken") String accessToken,
+            @RequestParam(value = "category[]", required = false) String[] category,
+            @RequestParam(value = "tags[]", required = false) String[] tags,
+            @RequestParam(value = "studio", required = false) String studio,
+            @RequestParam(value = "promotedIds[]", required = false) String[] promotedIds,
+            @RequestParam(value = "order", required = false, defaultValue = "relevancy") String order)
             throws RestException {
 
         System.out.println("category " + Arrays.toString(category));
         System.out.println("tags " + Arrays.toString(tags));
         System.out.println("studio " + studio);
-        System.out.println("publishTime " + publishTime);
+        System.out.println("publishTime " + order);
         System.out.println("promotedIds " + Arrays.toString(promotedIds));
-        List<DataDTO> dataDTOS = dataService.getDataList(category, tags, studio, promotedIds, publishTime);
+        List<DataDTO> dataDTOS = dataService.getDataList(category, tags, studio, promotedIds, order);
 
         return ResponseEntity.ok().body(dataDTOS);
 

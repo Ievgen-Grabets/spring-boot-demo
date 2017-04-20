@@ -3,12 +3,16 @@ package evg.test.service.impl;
 import evg.test.dto.DataDTO;
 import evg.test.service.DataService;
 import evg.test.service.ElasticSearchClient;
+import evg.test.util.ElasticSearchHelper;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.internal.InternalSearchHit;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,49 +25,35 @@ public class DataServiceImpl implements DataService {
     private ElasticSearchClient elasticSearchClient;
 
     @Override
-    public List<DataDTO> getDataList(String[] category, String[] tags, String studio, String[] promotedIds, String orderPublishTime) {
+    public List<DataDTO> getDataList(String[] category, String[] tags, String studio, String[] promotedIds, String order) {
 
         TransportClient client = elasticSearchClient.getClient();
-        //SearchResponse response = client.prepareSearch().get();
+        List<QueryBuilder> queryBuilderList = new ArrayList<>();
+        queryBuilderList = ElasticSearchHelper.addQueryToList(queryBuilderList, "category", category);
+        queryBuilderList = ElasticSearchHelper.addQueryToList(queryBuilderList, "tag", tags);
+        queryBuilderList = ElasticSearchHelper.addQueryToList(queryBuilderList, "studio", studio);
+        queryBuilderList = ElasticSearchHelper.addQueryToList(queryBuilderList, "promotedIds", promotedIds);
 
-        List<DataDTO> dataDTOS = new ArrayList<>();
-        SearchResponse response = client.prepareSearch("index1")
-                .setTypes("feeds")
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.termQuery("tag", "tag2"))                 // Query
-                .setFrom(0).setSize(60).setExplain(true)
-                .get();
-
-        for (SearchHit hit : response.getHits().getHits()) {
-            Map element = ((InternalSearchHit) hit).getSource();
-            String name = (String) element.get("name");
-            String id = (String) element.get("id");
-            String elementCategory = (String) element.get("category");
-            String elementDescription = (String) element.get("description");
-            String elementStudio = (String) element.get("studio");
-            Date elementPublishTime = new Date((Long) element.get("publishTime"));
-            Object[] objectArray =  ((ArrayList) element.get("tag")).toArray();
-            String[] elementTag =  Arrays.copyOf(objectArray, objectArray.length, String[].class);;
-            objectArray =  ((ArrayList) element.get("promotedIds")).toArray();
-            String[] elementPromotedIds = Arrays.copyOf(objectArray, objectArray.length, String[].class);;
-            DataDTO dataDTO = new DataDTO(name);
-            dataDTO.setId(id);
-            dataDTO.setCategory(elementCategory);
-            dataDTO.setTag(elementTag);
-            dataDTO.setDescription(elementDescription);
-            dataDTO.setStudio(elementStudio);
-            dataDTO.setPublishTime(elementPublishTime);
-            dataDTO.setPromotedIds(elementPromotedIds);
-
-            dataDTOS.add(dataDTO);
-
-
-            System.out.println("hit" + hit);
-
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        for(QueryBuilder queryBuilder: queryBuilderList){
+            query.must(queryBuilder);
         }
 
+        SearchRequestBuilder requestBuilder = client.prepareSearch("index1");
 
-        //return Collections.unmodifiableList(Arrays.asList(FakeDataHolder.DATA_DTO_ARRAY));
+        requestBuilder.setTypes("feeds").setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(query).setFrom(0).setSize(60);
+
+        if(Objects.equals(order, "recent")){
+            requestBuilder.addSort("publishTime" , SortOrder.DESC);
+        }
+
+        SearchResponse response = requestBuilder.get();
+        SearchHit[] hits = response.getHits().getHits();
+        List<DataDTO> dataDTOS = new ArrayList<>(hits.length);
+        for (SearchHit hit : hits) {
+            dataDTOS.add(ElasticSearchHelper.parseDataDtoFromSearchHit(hit));
+        }
+
         return Collections.unmodifiableList(dataDTOS);
 
     }

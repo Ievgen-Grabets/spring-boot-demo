@@ -55,7 +55,7 @@ public class DataControllerTest {
                 null,
                 "relevancy")).thenReturn(expectedDataDTOs);
 
-        mockMvc.perform(get("/feed?category[]=cat1,cat2&tags[]=tggg"))
+        mockMvc.perform(post("/feed?accessToken=dXNlcjpmZGF&category[]=cat1,cat2&tags[]=tggg"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
